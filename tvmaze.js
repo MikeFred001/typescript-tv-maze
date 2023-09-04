@@ -12588,10 +12588,10 @@ var jquery_1 = __importDefault(__webpack_require__(/*! jquery */ "./node_modules
 var $ = jquery_1.default;
 var $showsList = $("#showsList");
 var $episodesArea = $("#episodesArea");
+var $episodesList = $("#episodesList");
 var $searchForm = $("#searchForm");
 var TV_MAZE_SEARCH_URL = "http://api.tvmaze.com/search/shows";
 var TV_MAZE_EPISODES_URL = "http://api.tvmaze.com/shows";
-// add "/show-id/episodes"
 var TV_MAZE_LOGO_IMG = "https://pbs.twimg.com/media/EIOH05vWoAA0yr2.jpg";
 /** Given a search term, search for tv shows that match that query.
  *
@@ -12625,12 +12625,13 @@ function searchShowsByTerm(term) {
         });
     });
 }
-/** Given list of shows, create markup for each and to DOM */
+/** Empty the showsList in DOM.
+ * Given list of shows, create markup for each show and append to DOM */
 function populateShows(shows) {
     $showsList.empty();
     for (var _i = 0, shows_1 = shows; _i < shows_1.length; _i++) {
         var show = shows_1[_i];
-        var $show = $("<div data-show-id=\"".concat(show.id, "\" class=\"Show col-md-12 col-lg-6 mb-4\">\n         <div class=\"media\">\n           <img\n              src=").concat(show.image, "\n              alt=\"Bletchly Circle San Francisco\"\n              class=\"w-25 me-3\">\n           <div class=\"media-body\">\n             <h5 class=\"text-primary\">").concat(show.name, "</h5>\n             <div><small>").concat(show.summary, "</small></div>\n             <button class=\"btn btn-outline-light btn-sm Show-getEpisodes\">\n               Episodes\n             </button>\n           </div>\n         </div>\n       </div>\n      "));
+        var $show = $("<div data-show-id=\"".concat(show.id, "\" class=\"Show col-md-12 col-lg-6 mb-4\">\n         <div class=\"media\">\n           <img\n              src=").concat(show.image, "\n              alt=\"Bletchly Circle San Francisco\"\n              class=\"w-25 me-3\">\n           <div class=\"media-body\">\n             <h5 class=\"text-primary\">").concat(show.name, "</h5>\n             <div><small>").concat(show.summary, "</small></div>\n             <button class=\"btn btn-outline-light btn-sm Show-getEpisodes\" id=").concat(show.id, ">\n               Episodes\n             </button>\n           </div>\n         </div>\n       </div>\n      "));
         $showsList.append($show);
     }
 }
@@ -12695,17 +12696,51 @@ function getEpisodesOfShow(id) {
         });
     });
 }
-// async function getEpisodesOfShow(id) { }
-/** Write a clear docstring for this function... */
-// function populateEpisodes(episodes) { }
+/** Empty the episodesList section in DOM.
+ * Repopulate list with episodes of show.
+ * Takes an array of episodes [ { id, name, season, number }, ... ]
+ */
 function populateEpisodes(episodes) {
-    $episodesArea.empty();
+    $episodesList.empty();
     for (var _i = 0, episodes_1 = episodes; _i < episodes_1.length; _i++) {
         var episode = episodes_1[_i];
-        var $episode = $("\n        <li>\n          Name: ".concat(episode.name, ",\n          Season: ").concat(episode.season, ",\n          Episode: ").concat(episode.number, "\n        </li>\n      "));
-        $episodesArea.append("<ul>".concat($episode, "</ul>"));
+        var $episode = $("\n        <li>\n          ".concat(episode.name, " (Season ").concat(episode.season, ", Number ").concat(episode.number, ")\n        </li>\n      "));
+        $episodesList.append($episode);
     }
 }
+/** Fetch episodes for show of showId from TVMAZE api.
+ * Populate episodes list in DOM.
+ * Reveal the episodes area on page.
+ * Takes a showId: number
+*/
+function retrieveAndDisplayEpisodes(showId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var episodes;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getEpisodesOfShow(showId)];
+                case 1:
+                    episodes = _a.sent();
+                    populateEpisodes(episodes);
+                    $episodesArea.show();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/** Click handler, retrieves and displays episodes for target show on click. */
+$showsList.on("click", ".Show-getEpisodes", function handleEpisodesButton(evt) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, retrieveAndDisplayEpisodes(evt.target.id)];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
 
 
 /***/ })

@@ -5,11 +5,11 @@ const $ = jQuery;
 
 const $showsList: JQuery = $("#showsList");
 const $episodesArea: JQuery = $("#episodesArea");
+const $episodesList: JQuery = $("#episodesList");
 const $searchForm: JQuery = $("#searchForm");
 
 const TV_MAZE_SEARCH_URL: string = "http://api.tvmaze.com/search/shows";
 const TV_MAZE_EPISODES_URL: string = "http://api.tvmaze.com/shows";
-// add "/show-id/episodes"
 const TV_MAZE_LOGO_IMG: string = "https://pbs.twimg.com/media/EIOH05vWoAA0yr2.jpg";
 
 interface ApiShowInterface {
@@ -63,8 +63,8 @@ async function searchShowsByTerm(term: string): Promise<ShowInterface[]> {
 }
 
 
-/** Given list of shows, create markup for each and to DOM */
-
+/** Empty the showsList in DOM.
+ * Given list of shows, create markup for each show and append to DOM */
 function populateShows(shows: ShowInterface[]): void {
   $showsList.empty();
 
@@ -79,7 +79,7 @@ function populateShows(shows: ShowInterface[]): void {
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
              <div><small>${show.summary}</small></div>
-             <button class="btn btn-outline-light btn-sm Show-getEpisodes">
+             <button class="btn btn-outline-light btn-sm Show-getEpisodes" id=${show.id}>
                Episodes
              </button>
            </div>
@@ -94,7 +94,6 @@ function populateShows(shows: ShowInterface[]): void {
 /** Handle search form submission: get shows from API and display.
  *    Hide episodes area (that only gets shown if they ask for episodes)
  */
-
 async function searchForShowAndDisplay(): Promise<void> {
   const term = $("#searchForm-term").val() as string;
   const shows: ShowInterface[] = await searchShowsByTerm(term);
@@ -131,24 +130,38 @@ async function getEpisodesOfShow(id: number): Promise<EpisodeInterface[]> {
   return episodes;
 }
 
-// async function getEpisodesOfShow(id) { }
-
-/** Write a clear docstring for this function... */
-
-// function populateEpisodes(episodes) { }
-
+/** Empty the episodesList section in DOM.
+ * Repopulate list with episodes of show.
+ * Takes an array of episodes [ { id, name, season, number }, ... ]
+ */
 function populateEpisodes(episodes: EpisodeInterface[]): void {
-  $episodesArea.empty();
+  $episodesList.empty();
 
   for (const episode of episodes) {
     const $episode: JQuery = $(`
         <li>
-          Name: ${episode.name},
-          Season: ${episode.season},
-          Episode: ${episode.number}
+          ${episode.name} (Season ${episode.season}, Number ${episode.number})
         </li>
       `);
 
-    $episodesArea.append(`<ul>${$episode}</ul>`);
+    $episodesList.append($episode);
   }
 }
+
+/** Fetch episodes for show of showId from TVMAZE api.
+ * Populate episodes list in DOM.
+ * Reveal the episodes area on page.
+ * Takes a showId: number
+*/
+async function retrieveAndDisplayEpisodes(showId: number): Promise<void> {
+  const episodes: EpisodeInterface[] = await getEpisodesOfShow(showId);
+  populateEpisodes(episodes);
+  $episodesArea.show();
+}
+
+
+/** Click handler, retrieves and displays episodes for target show on click. */
+$showsList.on("click", ".Show-getEpisodes",
+  async function handleEpisodesButton(evt: JQuery.ClickEvent) {
+  await retrieveAndDisplayEpisodes(evt.target.id);
+});
