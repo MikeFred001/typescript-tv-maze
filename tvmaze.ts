@@ -15,10 +15,9 @@ interface ApiShowInterface { show: {
   id: number;
   name: string;
   summary: string;
-  image: string;
+  image: ({medium: string, original: string} | null ) ;
 }
 }
-
 
 interface ShowInterface {
   id: number;
@@ -48,12 +47,14 @@ async function searchShowsByTerm(term: string): Promise<ShowInterface[]> {
   const showsApiData: ApiShowInterface[] = response.data;
 
   // don't need to type my callback to say what the item being looped over is because ewe are looping over showsApiData
-  const shows = showsApiData.map( item => { return {
-    id: item.show.id,
-    name: item.show.name,
-    summary: item.show.summary,
-    image: item.show.image
-  }})
+  const shows = showsApiData.map( item => {
+    const show = item.show;
+    return {
+    id: show.id,
+    name: show.name,
+    summary: show.summary,
+    image: ( show.image ? show.image?.original : TV_MAZE_LOGO_IMG)
+  }});
 
   return shows;
 }
