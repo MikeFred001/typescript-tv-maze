@@ -3,10 +3,16 @@ import jQuery from 'jquery';
 
 const $ = jQuery;
 
-const $showsList = $("#showsList");
-const $episodesArea = $("#episodesArea");
-const $searchForm = $("#searchForm");
+const $showsList: JQuery = $("#showsList");
+const $episodesArea: JQuery = $("#episodesArea");
+const $searchForm: JQuery = $("#searchForm");
 
+interface ShowInterface {
+  id: number;
+  name: string;
+  summary: string;
+  image: string;
+}
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -15,7 +21,7 @@ const $searchForm = $("#searchForm");
  *    (if no image URL given by API, put in a default image URL)
  */
 
-async function searchShowsByTerm(term) {
+async function searchShowsByTerm(term: string): Promise<ShowInterface[]> {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   return [
     {
@@ -40,11 +46,11 @@ async function searchShowsByTerm(term) {
 
 /** Given list of shows, create markup for each and to DOM */
 
-function populateShows(shows) {
+function populateShows(shows: ShowInterface[]): void {
   $showsList.empty();
 
   for (let show of shows) {
-    const $show = $(
+    const $show: JQuery = $(
         `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
