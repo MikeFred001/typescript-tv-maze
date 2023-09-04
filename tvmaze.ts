@@ -67,25 +67,24 @@ async function searchShowsByTerm(term: string): Promise<ShowInterface[]> {
  * Given list of shows, create markup for each show and append to DOM */
 function populateShows(shows: ShowInterface[]): void {
   $showsList.empty();
-
   for (let show of shows) {
     const $show: JQuery = $(
         `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
               src=${show.image}
-              alt="Bletchly Circle San Francisco"
+              alt="${show.name}"
               class="w-25 me-3">
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
              <div><small>${show.summary}</small></div>
-             <button class="btn btn-outline-light btn-sm Show-getEpisodes" id=${show.id}>
+             <button class="btn btn-outline-light btn-sm Show-getEpisodes">
                Episodes
              </button>
            </div>
          </div>
        </div>
-      `);
+      `)
 
     $showsList.append($show);  }
 }
@@ -161,7 +160,8 @@ async function retrieveAndDisplayEpisodes(showId: number): Promise<void> {
 
 
 /** Click handler, retrieves and displays episodes for target show on click. */
-$showsList.on("click", ".Show-getEpisodes",
+$showsList.on("click", "button",
   async function handleEpisodesButton(evt: JQuery.ClickEvent) {
-  await retrieveAndDisplayEpisodes(evt.target.id);
+  const id = $(evt.target).closest("div.Show").data("showId");
+  await retrieveAndDisplayEpisodes(id);
 });
