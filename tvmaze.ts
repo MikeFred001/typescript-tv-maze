@@ -9,14 +9,16 @@ const $searchForm: JQuery = $("#searchForm");
 
 const TV_MAZE_SEARCH_URL: string = "http://api.tvmaze.com/search/shows";
 const TV_MAZE_EPISODES_URL: string = "http://api.tvmaze.com/shows";
+// add "/show-id/episodes"
 const TV_MAZE_LOGO_IMG: string = "https://pbs.twimg.com/media/EIOH05vWoAA0yr2.jpg";
 
-interface ApiShowInterface { show: {
-  id: number;
-  name: string;
-  summary: string;
-  image: ({medium: string, original: string} | null ) ;
-}
+interface ApiShowInterface {
+  show: {
+    id: number;
+    name: string;
+    summary: string;
+    image: ({medium: string, original: string} | null ) ;
+  }
 }
 
 interface ShowInterface {
@@ -24,6 +26,13 @@ interface ShowInterface {
   name: string;
   summary: string;
   image: string;
+}
+
+interface EpisodeInterface {
+  id: number;
+  name: string;
+  season: number;
+  number: number;
 }
 
 /** Given a search term, search for tv shows that match that query.
@@ -34,27 +43,21 @@ interface ShowInterface {
  */
 
 async function searchShowsByTerm(term: string): Promise<ShowInterface[]> {
+  console.log("TERM", term);
 
-  // pull the param/input value from $searchForm
-  // make API request using that value (q=searchTerm)
-  // map over the requests and put it in ShowInterface format
-  // return result of that map
-
-  const searchTerm = $searchForm.val();
-
-  const response = await axios.get(TV_MAZE_SEARCH_URL, { params: { q: searchTerm }});
+  const response = await axios.get(TV_MAZE_SEARCH_URL, { params: { q: term }});
 
   const showsApiData: ApiShowInterface[] = response.data;
 
-  // don't need to type my callback to say what the item being looped over is because ewe are looping over showsApiData
   const shows = showsApiData.map( item => {
     const show = item.show;
     return {
-    id: show.id,
-    name: show.name,
-    summary: show.summary,
-    image: ( show.image ? show.image?.original : TV_MAZE_LOGO_IMG)
-  }});
+      id: show.id,
+      name: show.name,
+      summary: show.summary,
+      image: ( show.image ? show.image?.original : TV_MAZE_LOGO_IMG)
+    }
+  });
 
   return shows;
 }
@@ -70,7 +73,7 @@ function populateShows(shows: ShowInterface[]): void {
         `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg"
+              src=${show.image}
               alt="Bletchly Circle San Francisco"
               class="w-25 me-3">
            <div class="media-body">
@@ -109,9 +112,43 @@ $searchForm.on("submit", async function (evt: JQuery.SubmitEvent): Promise<void>
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
+async function getEpisodesOfShow(id: number): Promise<EpisodeInterface[]> {
+  const response = await axios.get(`${TV_MAZE_EPISODES_URL}/${id}/episodes`);
+  const data: EpisodeInterface[] = response.data;
+
+  console.log("episodes consolelog", data);
+
+  const episodes = data.map(episode => {
+    console.log(episode);
+    return {
+      id: episode.id,
+      name: episode.name,
+      season: episode.season,
+      number: episode.number
+    };
+  });
+
+  return episodes;
+}
 
 // async function getEpisodesOfShow(id) { }
 
 /** Write a clear docstring for this function... */
 
 // function populateEpisodes(episodes) { }
+
+function populateEpisodes(episodes: EpisodeInterface[]): void {
+  $episodesArea.empty();
+
+  for (const episode of episodes) {
+    const $episode: JQuery = $(`
+        <li>
+          Name: ${episode.name},
+          Season: ${episode.season},
+          Episode: ${episode.number}
+        </li>
+      `);
+
+    $episodesArea.append(`<ul>${$episode}</ul>`);
+  }
+}
